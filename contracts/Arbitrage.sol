@@ -1,141 +1,60 @@
 pragma solidity ^0.8.0;
 
+import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
+
 contract Arbitrage {
-  address public token;
-  uint256 public amount;
-  uint256 public balance;
-  uint256 public profit;
+    // Mapping of DEX addresses to token prices
+    mapping(address => uint256) public dexPrices;
 
-  // Event emitted when a trade is executed
-  event TradeExecuted(address indexed token, uint256 amount, uint256 profit);
+    // Mapping of token balances
+    mapping(address => uint256) public tokenBalances;
 
-  // Event emitted when a deposit is made
-  event DepositMade(address indexed token, uint256 amount);
+    // Reentrancy guard
+    ReentrancyGuard public reentrancyGuard;
 
-  // Event emitted when a withdrawal is made
-  event WithdrawalMade(address indexed token, uint256 amount);
+    // Constructor
+    constructor(address[] memory _dexes, address _token) public {
+        // Initialize DEX addresses and token
+        for (uint256 i = 0; i < _dexes.length; i++) {
+            dexPrices[_dexes[i]] = 0;
+        }
+        token = _token;
+    }
 
-  // Function to execute an arbitrage trade
-  function arbitrage() public {
-    // Check if the token is set
-    require(token != address(0), "Token not set");
+    // Arbitrage function
+    function arbitrage(address _dex1, address _dex2) public {
+        // Check for price discrepancies
+        uint256 price1 = dexPrices[_dex1];
+        uint256 price2 = dexPrices[_dex2];
 
-    // Check if the amount is greater than 0
-    require(amount > 0, "Amount must be greater than 0");
+        if (price1 > price2) {
+            // Buy on DEX2 and sell on DEX1
+            buyOnDex(_dex2, price2);
+            sellOnDex(_dex1, price1);
+        } else if (price2 > price1) {
+            // Buy on DEX1 and sell on DEX2
+            buyOnDex(_dex1, price1);
+            sellOnDex(_dex2, price2);
+        }
+    }
 
-    // Get the current price of the token
-    uint256 currentPrice = getPrice(token);
+    // Get price function
+    function getPrice(address _dex) public view returns (uint256) {
+        return dexPrices[_dex];
+    }
 
-    // Calculate the profit
-    uint256 profit = calculateProfit(currentPrice, amount);
+    // Get balance function
+    function getBalance(address _token) public view returns (uint256) {
+        return tokenBalances[_token];
+    }
 
-    // Execute the trade
-    executeTrade(token, amount, profit);
+    // Buy on DEX function
+    function buyOnDex(address _dex, uint256 _price) internal {
+        // Implement buy logic here
+    }
 
-    // Emit the TradeExecuted event
-    emit TradeExecuted(token, amount, profit);
-  }
-
-  // Function to set the token
-  function setToken(address _token) public {
-    // Check if the token is not already set
-    require(token == address(0), "Token already set");
-
-    // Set the token
-    token = _token;
-  }
-
-  // Function to set the amount
-  function setAmount(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Set the amount
-    amount = _amount;
-  }
-
-  // Function to get the balance
-  function getBalance() public view returns (uint256) {
-    // Return the balance
-    return balance;
-  }
-
-  // Function to deposit funds
-  function deposit(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Deposit the funds
-    balance += _amount;
-
-    // Emit the DepositMade event
-    emit DepositMade(token, _amount);
-  }
-
-  // Function to withdraw funds
-  function withdraw(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Check if the balance is sufficient
-    require(balance >= _amount, "Insufficient balance");
-
-    // Withdraw the funds
-    balance -= _amount;
-
-    // Emit the WithdrawalMade event
-    emit WithdrawalMade(token, _amount);
-  }
-
-  // Function to get the profit
-  function getProfit() public view returns (uint256) {
-    // Return the profit
-    return profit;
-  }
-
-  // Function to get the current price of a token
-  function getPrice(address _token) internal returns (uint256) {
-    // This function should be implemented to get the current price of a token
-    // For example, it could use an oracle service or a decentralized exchange
-  }
-
-  // Function to calculate the profit
-  function calculateProfit(uint256 _currentPrice, uint256 _amount) internal returns (uint256) {
-    // This function should be implemented to calculate the profit
-    // For example, it could use a formula based on the current price and amount
-  }
-
-  // Function to execute a trade
-  function executeTrade(address _token, uint256 _amount, uint256 _profit) internal {
-    // This function should be implemented to execute a trade
-    // For example, it could use a decentralized exchange or a liquidity pool
-  }
+    // Sell on DEX function
+    function sellOnDex(address _dex, uint256 _price) internal {
+        // Implement sell logic here
+    }
 }
-function getPrice(address _token) internal returns (uint256) {
-  // Create a new instance of the Chainlink oracle service
-  ChainlinkOracle oracle = ChainlinkOracle(address(0x...));
-
-  // Get the current price of the token
-  uint256 currentPrice = oracle.getPrice(_token);
-
-  // Return the current price
-  return currentPrice;
-}
-function calculateProfit(uint256 _currentPrice, uint256 _amount) internal returns (uint256) {
-  // Calculate the profit using a formula
-  uint256 profit = (_currentPrice * _amount) - (_amount * 0.1);
-
-  // Return the profit
-  return profit;
-}
-function executeTrade(address _token, uint256 _amount, uint256 _profit) internal {
-  // Create a new instance of the Uniswap decentralized exchange
-  UniswapExchange exchange = UniswapExchange(address(0x...));
-
-  // Execute the trade
-  exchange.executeTrade(_token, _amount, _profit);
-
-  // Return the result of the trade
-  return exchange.getResult();
-}
-
