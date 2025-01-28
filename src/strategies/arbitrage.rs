@@ -1,16 +1,14 @@
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::Read;
 
-struct Arbitrage {
-  dexes: HashMap<String, String>,
-  token: String,
-  gas_price: u64,
-  private_key: String,
+pub struct Arbitrage {
+  pub dexes: HashMap<String, String>,
+  pub token: String,
+  pub gas_price: u64,
+  pub private_key: String,
 }
 
 impl Arbitrage {
-  fn new(dexes: HashMap<String, String>, token: String, gas_price: u64, private_key: String) -> Self {
+  pub fn new(dexes: HashMap<String, String>, token: String, gas_price: u64, private_key: String) -> Self {
     Arbitrage {
       dexes,
       token,
@@ -19,20 +17,7 @@ impl Arbitrage {
     }
   }
 
-  fn arbitrage(&self) {
+  pub fn arbitrage(&self) {
     // Implement arbitrage logic here
   }
-}
-
-fn main() {
-  let mut dexes = HashMap::new();
-  dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
-  dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
-
-  let token = "0x1234567890abcdef".to_string();
-  let gas_price = 20e9;
-  let private_key = "0x1234567890abcdef".to_string();
-
-  let arbitrage = Arbitrage::new(dexes, token, gas_price, private_key);
-  arbitrage.arbitrage();
 }
