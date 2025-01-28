@@ -1,7 +1,6 @@
 const { ethers } = require("hardhat");
 
 async function deployFlashLoan() {
-  try {
     // Deploy the FlashLoan contract
     const FlashLoan = await ethers.getContractFactory("FlashLoan");
     const flashLoan = await FlashLoan.deploy();
@@ -13,22 +12,14 @@ async function deployFlashLoan() {
 
     // Verify the contract on Etherscan
     await verifyContract(flashLoan.address);
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 async function verifyContract(contractAddress) {
-  try {
     // Verify the contract on Etherscan
     await run("verify:verify", {
-      address: contractAddress,
-      constructorArguments: [],
+        address: contractAddress,
+        constructorArguments: [],
     });
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 deployFlashLoan();
-
