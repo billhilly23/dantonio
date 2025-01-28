@@ -1,7 +1,6 @@
 const { ethers } = require("hardhat");
 
 async function deployLiquidation() {
-  try {
     // Deploy the Liquidation contract
     const Liquidation = await ethers.getContractFactory("Liquidation");
     const liquidation = await Liquidation.deploy();
@@ -13,22 +12,14 @@ async function deployLiquidation() {
 
     // Verify the contract on Etherscan
     await verifyContract(liquidation.address);
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 async function verifyContract(contractAddress) {
-  try {
     // Verify the contract on Etherscan
     await run("verify:verify", {
-      address: contractAddress,
-      constructorArguments: [],
+        address: contractAddress,
+        constructorArguments: [],
     });
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 deployLiquidation();
-
