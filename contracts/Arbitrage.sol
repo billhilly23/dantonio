@@ -1,3 +1,4 @@
+// contracts/Arbitrage.sol
 pragma solidity ^0.8.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
@@ -50,11 +51,98 @@ contract Arbitrage {
 
   // Buy on DEX function
   function buyOnDex(address _dex, uint256 _price) internal {
-    // Implement buy logic here
+    // Buy on DEX function
+function buyOnDex(address _dex, uint256 _price) internal {
+  // Set the Uniswap V2 Router address
+  address uniswapV2Router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+
+  // Set the WETH address
+  address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+  // Set the token address
+  address token = address(this);
+
+  // Set the amount of ETH to swap
+  uint256 amountIn = 1 ether;
+
+  // Set the amount of tokens to receive
+  uint256 amountOut = _price;
+
+  // Set the deadline for the transaction
+  uint256 deadline = block.timestamp + 15 minutes;
+
+  // Create a path for the swap
+  address[] memory path = new address[](2);
+  path[0] = weth;
+  path[1] = token;
+
+  // Use the Uniswap V2 Router to swap ETH for the token
+  IUniswapV2Router02(uniswapV2Router).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+    amountIn,
+    amountOut,
+    path,
+    _dex,
+    deadline
+  );
+}
+
+    // Use a library like UniswapV2Router02 to buy the token
+    UniswapV2Router02 router = UniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+      1 ether,
+      0,
+      _price,
+      _dex,
+      block.timestamp
+    );
   }
 
   // Sell on DEX function
   function sellOnDex(address _dex, uint256 _price) internal {
-    // Implement sell logic here
+    // Sell on DEX function
+function sellOnDex(address _dex, uint256 _price) internal {
+  // Set the Uniswap V2 Router address
+  address uniswapV2Router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+
+  // Set the WETH address
+  address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
+  // Set the token address
+  address token = address(this);
+
+  // Set the amount of tokens to swap
+  uint256 amountIn = _price;
+
+  // Set the amount of ETH to receive
+  uint256 amountOut = 1 ether;
+
+  // Set the deadline for the transaction
+  uint256 deadline = block.timestamp + 15 minutes;
+
+  // Create a path for the swap
+  address[] memory path = new address[](2);
+  path[0] = token;
+  path[1] = weth;
+
+  // Use the Uniswap V2 Router to swap the token for ETH
+  IUniswapV2Router02(uniswapV2Router).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+    amountIn,
+    amountOut,
+    path,
+    _dex,
+    deadline
+  );
+}
+
+    // Use a library like UniswapV2Router02 to sell the token
+    UniswapV2Router02 router = UniswapV2Router02(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    router.swapExactTokensForETHSupportingFeeOnTransferTokens(
+      1 ether,
+      0,
+      _price,
+      _dex,
+      block.timestamp
+    );
   }
 }
+
