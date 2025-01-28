@@ -1,0 +1,16 @@
+// dashboard_config.json
+{
+  "dexes": [
+    {
+      "address": "0x1234567890abcdef",
+      "token": "0x1234567890abcdef"
+    },
+    {
+      "address": "0x234567890abcdef1",
+      "token": "0x234567890abcdef1"
+    }
+  ],
+  "token": "0x1234567890abcdef",
+  "gasPrice": 20e9,
+  "privateKey": "0x1234567890abcdef"
+}
