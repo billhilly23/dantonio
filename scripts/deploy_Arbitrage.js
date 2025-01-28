@@ -1,7 +1,6 @@
 const { ethers } = require("hardhat");
 
 async function deployArbitrage() {
-  try {
     // Deploy the Arbitrage contract
     const Arbitrage = await ethers.getContractFactory("Arbitrage");
     const arbitrage = await Arbitrage.deploy();
@@ -13,21 +12,14 @@ async function deployArbitrage() {
 
     // Verify the contract on Etherscan
     await verifyContract(arbitrage.address);
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 async function verifyContract(contractAddress) {
-  try {
     // Verify the contract on Etherscan
     await run("verify:verify", {
-      address: contractAddress,
-      constructorArguments: [],
+        address: contractAddress,
+        constructorArguments: [],
     });
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 deployArbitrage();
