@@ -1,129 +1,61 @@
 pragma solidity ^0.8.0;
 
+import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
+
 contract Liquidation {
-  address public market;
-  uint256 public amount;
-  uint256 public balance;
-  uint256 public profit;
+  // Mapping of DEX addresses to token prices
+  mapping(address => uint256) public dexPrices;
 
-  // Event emitted when a liquidation trade is executed
-  event LiquidationTradeExecuted(address indexed market, uint256 amount, uint256 profit);
+  // Mapping of token balances
+  mapping(address => uint256) public tokenBalances;
 
-  // Event emitted when a deposit is made
-  event DepositMade(address indexed market, uint256 amount);
+  // Reentrancy guard
+  ReentrancyGuard public reentrancyGuard;
 
-  // Event emitted when a withdrawal is made
-  event WithdrawalMade(address indexed market, uint256 amount);
-
-  // Function to execute a liquidation trade
-  function liquidation() public {
-    // Check if the market is set
-    require(market != address(0), "Market not set");
-
-    // Check if the amount is greater than 0
-    require(amount > 0, "Amount must be greater than 0");
-
-    // Get the current price of the market
-    uint256 currentPrice = getPrice(market);
-
-    // Calculate the profit
-    uint256 profit = calculateProfit(currentPrice, amount);
-
-    // Execute the liquidation trade
-    executeLiquidationTrade(market, amount, profit);
-
-    // Emit the LiquidationTradeExecuted event
-    emit LiquidationTradeExecuted(market, amount, profit);
+  // Constructor
+  constructor(address[] memory _dexes, address _token) public {
+    // Initialize DEX addresses and token
+    for (uint256 i = 0; i < _dexes.length; i++) {
+      dexPrices[_dexes[i]] = 0;
+    }
+    token = _token;
   }
 
-  // Function to set the market
-  function setMarket(address _market) public {
-    // Check if the market is not already set
-    require(market == address(0), "Market already set");
+  // Liquidation function
+  function liquidation(address _dex1, address _dex2) public {
+    // Check for price discrepancies
+    uint256 price1 = dexPrices[_dex1];
+    uint256 price2 = dexPrices[_dex2];
 
-    // Set the market
-    market = _market;
+    if (price1 > price2) {
+      // Buy on DEX2 and sell on DEX1
+      buyOnDex(_dex2, price2);
+      sellOnDex(_dex1, price1);
+    } else if (price2 > price1) {
+      // Buy on DEX1 and sell on DEX2
+      buyOnDex(_dex1, price1);
+      sellOnDex(_dex2, price2);
+    }
   }
 
-  // Function to set the amount
-  function setAmount(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Set the amount
-    amount = _amount;
+  // Get price function
+  function getPrice(address _dex) public view returns (uint256) {
+    return dexPrices[_dex];
   }
 
-  // Function to get the balance
-  function getBalance() public view returns (uint256) {
-    // Return the balance
-    return balance;
+  // Get balance function
+  function getBalance(address _token) public view returns (uint256) {
+    return tokenBalances[_token];
   }
 
-  // Function to deposit funds
-  function deposit(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Deposit the funds
-    balance += _amount;
-
-    // Emit the DepositMade event
-    emit DepositMade(market, _amount);
+  // Buy on DEX function
+  function buyOnDex(address _dex, uint256 _price) internal {
+    // Implement buy logic here
   }
 
-  // Function to withdraw funds
-  function withdraw(uint256 _amount) public {
-    // Check if the amount is greater than 0
-    require(_amount > 0, "Amount must be greater than 0");
-
-    // Check if the balance is sufficient
-    require(balance >= _amount, "Insufficient balance");
-
-    // Withdraw the funds
-    balance -= _amount;
-
-    // Emit the WithdrawalMade event
-    emit WithdrawalMade(market, _amount);
-  }
-
-  // Function to get the profit
-  function getProfit() public view returns (uint256) {
-    // Return the profit
-    return profit;
-  }
-
-  // Function to get the current price of a market
-  function getPrice(address _market) internal returns (uint256) {
-    // Create a new instance of the Chainlink oracle service
-    ChainlinkOracle oracle = ChainlinkOracle(address(0x...));
-
-    // Get the current price of the market
-    uint256 currentPrice = oracle.getPrice(_market);
-
-    // Return the current price
-    return currentPrice;
-  }
-
-  // Function to calculate the profit
-  function calculateProfit(uint256 _currentPrice, uint256 _amount) internal returns (uint256) {
-    // Calculate the profit using a formula
-    uint256 profit = (_currentPrice * _amount) - (_amount * 0.1);
-
-    // Return the profit
-    return profit;
-  }
-
-  // Function to execute a liquidation trade
-  function executeLiquidationTrade(address _market, uint256 _amount, uint256 _profit) internal {
-    // Create a new instance of the Uniswap decentralized exchange
-    UniswapExchange exchange = UniswapExchange(address(0x...));
-
-    // Execute the liquidation trade
-    exchange.executeTrade(_market, _amount, _profit);
-
-    // Return the result of the trade
-    return exchange.getResult();
+  // Sell on DEX function
+  function sellOnDex(address _dex, uint256 _price) internal {
+    // Implement sell logic here
   }
 }
 
