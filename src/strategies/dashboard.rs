@@ -36,5 +36,3 @@ fn main() {
   let dashboard = Dashboard::new(dexes, token, gas_price, private_key);
   dashboard.dashboard();
 }
-
-
