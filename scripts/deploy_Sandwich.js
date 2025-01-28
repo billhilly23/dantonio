@@ -1,7 +1,6 @@
 const { ethers } = require("hardhat");
 
 async function deploySandwich() {
-  try {
     // Deploy the Sandwich contract
     const Sandwich = await ethers.getContractFactory("Sandwich");
     const sandwich = await Sandwich.deploy();
@@ -13,22 +12,14 @@ async function deploySandwich() {
 
     // Verify the contract on Etherscan
     await verifyContract(sandwich.address);
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 async function verifyContract(contractAddress) {
-  try {
     // Verify the contract on Etherscan
     await run("verify:verify", {
-      address: contractAddress,
-      constructorArguments: [],
+        address: contractAddress,
+        constructorArguments: [],
     });
-  } catch (error) {
-    console.error(error);
-  }
 }
 
 deploySandwich();
-
