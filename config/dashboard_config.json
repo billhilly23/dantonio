@@ -1,10 +1,15 @@
 {
-  "port": 8080,
-  "refresh_interval": 60,
-  "notification_email": "admin@example.com",
-  "notification_sms": "+1234567890",
-  "twilio_account_sid": "your_twilio_account_sid",
-  "twilio_auth_token": "your_twilio_auth_token",
-  "twilio_phone_number": "+1987654321"
+  "dexes": [
+    {
+      "address": "0x1234567890abcdef",
+      "token": "0x1234567890abcdef"
+    },
+    {
+      "address": "0x234567890abcdef1",
+      "token": "0x234567890abcdef1"
+    }
+  ],
+  "token": "0x1234567890abcdef",
+  "gasPrice": 20e9,
+  "privateKey": "0x1234567890abcdef"
 }
-
