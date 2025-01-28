@@ -1,67 +1,114 @@
-// tests.rs
-use std::fs;
-use std::path::Path;
-use serde_json::Value;
-use web3::Web3;
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::Read;
 
-// Define a function to test the bot's performance
-fn test_performance(web3: &Web3) -> Result<(), std::io::Error> {
-    let performance = web3.eth().get_performance().await?;
-    assert_eq!(performance.trades_executed, 10);
-    assert_eq!(performance.trades_successful, 5);
-    assert_eq!(performance.trades_failed, 5);
-    Ok(())
+mod dashboard;
+mod frontrunning;
+mod hft;
+mod liquidation;
+mod sandwich;
+mod flashloan;
+mod arbitrage;
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_dashboard() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let dashboard = dashboard::Dashboard::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(dashboard.dashboard());
+  }
+
+  #[test]
+  fn test_frontrunning() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let frontrunning = frontrunning::Frontrunning::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(frontrunning.frontrunning());
+  }
+
+  #[test]
+  fn test_hft() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let hft = hft::Hft::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(hft.hft());
+  }
+
+  #[test]
+  fn test_liquidation() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let liquidation = liquidation::Liquidation::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(liquidation.liquidation());
+  }
+
+  #[test]
+  fn test_sandwich() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let sandwich = sandwich::Sandwich::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(sandwich.sandwich());
+  }
+
+  #[test]
+  fn test_flashloan() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let flashloan = flashloan::Flashloan::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(flashloan.flashloan());
+  }
+
+  #[test]
+  fn test_arbitrage() {
+    let mut dexes = HashMap::new();
+    dexes.insert("0x1234567890abcdef".to_string(), "0x1234567890abcdef".to_string());
+    dexes.insert("0x234567890abcdef1".to_string(), "0x234567890abcdef1".to_string());
+
+    let token = "0x1234567890abcdef".to_string();
+    let gas_price = 20e9;
+    let private_key = "0x1234567890abcdef".to_string();
+
+    let arbitrage = arbitrage::Arbitrage::new(dexes.clone(), token.clone(), gas_price, private_key.clone());
+    assert!(arbitrage.arbitrage());
+  }
 }
-
-// Define a function to test the bot's configuration
-fn test_configuration(web3: &Web3) -> Result<(), std::io::Error> {
-    let configuration = web3.eth().get_configuration().await?;
-    assert_eq!(configuration.trading_strategy, "arbitrage");
-    assert_eq!(configuration.risk_management, "stop_loss");
-    assert_eq!(configuration.gas_price, 20);
-    Ok(())
-}
-
-// Define a function to test the bot's balance
-fn test_balance(web3: &Web3) -> Result<(), std::io::Error> {
-    let balance = web3.eth().get_balance().await?;
-    assert_eq!(balance, 100);
-    Ok(())
-}
-
-// Define a function to test the bot's transaction history
-fn test_transaction_history(web3: &Web3) -> Result<(), std::io::Error> {
-    let transaction_history = web3.eth().get_transaction_history().await?;
-    assert_eq!(transaction_history.len(), 10);
-    Ok(())
-}
-
-// Define a function to test the bot's contract balances
-fn test_contract_balances(web3: &Web3) -> Result<(), std::io::Error> {
-    let contract_balances = web3.eth().get_contract_balances().await?;
-    assert_eq!(contract_balances.len(), 5);
-    Ok(())
-}
-
-// Define a function to test the bot's risk management
-fn test_risk_management(web3: &Web3) -> Result<(), std::io::Error> {
-    let risk_management = web3.eth().get_risk_management().await?;
-    assert_eq!(risk_management.stop_loss, 10);
-    assert_eq!(risk_management.take_profit, 20);
-    Ok(())
-}
-
-// Define a function to test the bot's gas price management
-fn test_gas_price_management(web3: &Web3) -> Result<(), std::io::Error> {
-    let gas_price_management = web3.eth().get_gas_price_management().await?;
-    assert_eq!(gas_price_management.gas_price, 20);
-    Ok(())
-}
-
-// Define a function to test the bot's contract interactions
-fn test_contract_interactions(web3: &Web3) -> Result<(), std::io::Error> {
-    let contract_interactions = web3.eth().get_contract_interactions().await?;
-    assert_eq!(contract_interactions.len(), 10);
-    Ok(())
-}
-
