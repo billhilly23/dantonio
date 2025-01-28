@@ -2,86 +2,99 @@ pragma solidity ^0.8.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 import "https://github.com/Uniswap/uniswap-v2-core/blob/master/contracts/UniswapV2Router02.sol";
-import "https://github.com/aave/aave-protocol/blob/master/contracts/flashloan/v2/FlashLoanReceiverBaseV2.sol";
 
-contract FlashLoan is FlashLoanReceiverBaseV2 {
-  // Mapping of DEX addresses to token prices
-  mapping(address => uint256) public dexPrices;
+contract FlashLoan {
+    // Mapping of DEX addresses to token prices
+    mapping(address => uint256) public dexPrices;
 
-  // Mapping of token balances
-  mapping(address => uint256) public tokenBalances;
+    // Mapping of token balances
+    mapping(address => uint256) public tokenBalances;
 
-  // Reentrancy guard
-  ReentrancyGuard public reentrancyGuard;
+    // Reentrancy guard
+    ReentrancyGuard public reentrancyGuard;
 
-  // Constructor
-  constructor(address[] memory _dexes, address _token) public {
-    // Initialize DEX addresses and token
-    for (uint256 i = 0; i < _dexes.length; i++) {
-      dexPrices[_dexes[i]] = 0;
+    // Constructor
+    constructor(address[] memory _dexes, address _token) public {
+        // Initialize DEX addresses and token
+        for (uint256 i = 0; i < _dexes.length; i++) {
+            dexPrices[_dexes[i]] = 0;
+        }
+        token = _token;
     }
-    token = _token;
-  }
 
-  // Flash loan function
-  function flashLoan(address _token, uint256 _amount) public {
-    // Set the Aave V2 Lending Pool address
-    address lendingPool = 0x7d2768dE32b0b80b7a3454c06BdAc94A568288a6;
+    // Flash loan function
+    function flashLoan(address _dex1, address _dex2) public {
+        // Check for price discrepancies
+        uint256 price1 = dexPrices[_dex1];
+        uint256 price2 = dexPrices[_dex2];
+        if (price1 > price2) {
+            // Borrow on DEX2 and repay on DEX1
+            borrowOnDex(_dex2, price2);
+            repayOnDex(_dex1, price1);
+        } else if (price2 > price1) {
+            // Borrow on DEX1 and repay on DEX2
+            borrowOnDex(_dex1, price1);
+            repayOnDex(_dex2, price2);
+        }
+    }
 
-    // Set the token address
-    address token = _token;
+    // Borrow on DEX function
+    function borrowOnDex(address _dex, uint256 _price) internal {
+        // Set the Uniswap V2 Router address
+        address uniswapV2Router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    // Set the amount of tokens to borrow
-    uint256 amount = _amount;
+        // Set the WETH address
+        address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    // Use the Aave V2 Lending Pool to borrow the tokens
-    ILendingPool(lendingPool).flashLoan(
-      address(this),
-      token,
-      amount,
-      "0x"
-    );
-  }
+        // Set the token address
+        address token = address(this);
 
-  // Execute strategy function
-  function executeStrategy(address _strategy, address _token, uint256 _amount) internal {
-    // Set the strategy address
-    address strategy = _strategy;
+        // Set the amount of ETH to borrow
+        uint256 amountIn = 1 ether;
 
-    // Set the token address
-    address token = _token;
+        // Set the amount of tokens to receive
+        uint256 amountOut = _price;
 
-    // Set the amount of tokens to use
-    uint256 amount = _amount;
+        // Set the deadline for the transaction
+        uint256 deadline = block.timestamp + 15 minutes;
 
-    // Use the strategy to execute the trade
-    IStrategy(strategy).executeTrade(token, amount);
-  }
+        // Create a path for the swap
+        address[] memory path = new address[](2);
+        path[0] = weth;
+        path[1] = token;
 
-  // Receive flash loan function
-  function executeOperation(
-    address[] calldata assets,
-    uint256[] calldata amounts,
-    uint256[] calldata premiums,
-    address initiator,
-    bytes calldata params
-  ) external override {
-    // Set the token address
-    address token = assets[0];
+        // Use the Uniswap V2 Router to borrow ETH for the token
+        IUniswapV2Router02(uniswapV2Router).swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOut, path, _dex, deadline);
+    }
 
-    // Set the amount of tokens to use
-    uint256 amount = amounts[0];
+    // Repay on DEX function
+    function repayOnDex(address _dex, uint256 _price) internal {
+        // Set the Uniswap V2 Router address
+        address uniswapV2Router = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
 
-    // Execute the strategy
-    executeStrategy(0x1234567890abcdef, token, amount);
+        // Set the WETH address
+        address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-    // Repay the flash loan
-    ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A568288a6).repay(
-      token,
-      amount,
-      0x1234567890abcdef
-    );
-  }
+        // Set the token address
+        address token = address(this);
+
+        // Set the amount of tokens to repay
+        uint256 amountIn = _price;
+
+        // Set the amount of ETH to receive
+        uint256 amountOut = 1 ether;
+
+        // Set the deadline for the transaction
+        uint256 deadline = block.timestamp + 15 minutes;
+
+        // Create a path for the swap
+        address[] memory path = new address[](2);
+        path[0] = token;
+        path[1] = weth;
+
+        // Use the Uniswap V2 Router to repay the token for ETH
+        IUniswapV2Router02(uniswapV2Router).swapExactTokensForTokensSupportingFeeOnTransferTokens(amountIn, amountOut, path, _dex, deadline);
+    }
 }
 
 
