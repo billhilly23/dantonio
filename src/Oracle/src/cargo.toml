@@ -1,0 +1,8 @@
+[package]
+name = "price_feed"
+version = "0.1.0"
+edition = "2018"
+
+[dependencies]
+web3 = "0.15.0"
+
